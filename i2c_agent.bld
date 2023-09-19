@@ -1,0 +1,8 @@
+src:
+  - src/i2c_if.sv
+  - i2c_agent_pkg.sv
+  - src/i2c_driver_bfm.sv
+  - src/i2c_monitor_bfm.sv
+
+include:
+  - '.'
