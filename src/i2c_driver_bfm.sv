@@ -55,12 +55,10 @@ interface i2c_driver_bfm (
         drive_ack();
 
         if (i2c_item.dir == I2C_WRITE) begin
-            drive_data(i2c_item.data);
-            drive_ack();
+            drive_write_data(i2c_item.data);
         end
         else begin
-            driver_clk(i2c_item.data_bytes);
-            drive_nack();
+            drive_read_data(i2c_item.data_bytes);
         end
 
         stop_condition();
@@ -107,19 +105,33 @@ interface i2c_driver_bfm (
         drive_bit(dir);
     endtask
 
-    task drive_data(logic [7:0] data);
-        for (int i = 7; i >= 0; i--) begin
-            drive_bit(data[i]);
+    task drive_write_data(ref logic [7:0] data[$]);
+        logic [7:0] dbyte;
+
+        while (data.size() > 0) begin
+            dbyte = data.pop_front();
+
+            for (int idx = 7; idx >= 0; idx--) begin
+                drive_bit(dbyte[idx]);
+            end
+
+            drive_ack();
+        end
+    endtask
+
+    task drive_read_data(int data_bytes);
+        for (int i = 0; i < data_bytes; i++) begin
+            for (int j = 0; j < 8; j++) begin
+                drive_bit(1'bZ);
+            end
+
+            // Ack
+            drive_bit(1'b1);
         end
     endtask
 
     task drive_ack();
-        i2c.sda = 1'bZ;
-
-    endtask
-
-    task drive_nack();
-
+        drive_bit(1'bZ);
     endtask
 
 endinterface

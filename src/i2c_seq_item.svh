@@ -30,7 +30,13 @@ class i2c_seq_item extends uvm_sequence_item;
     // Data Members
     //----------------------------------------------------------------------
 
+    i2c_dir_e dir;
+    i2c_addr_size_e addr_bits;
+
     rand logic [9:0] addr;
+
+    logic [7:0] data[$];
+    int data_bytes;
 
     //----------------------------------------------------------------------
     // Methods
