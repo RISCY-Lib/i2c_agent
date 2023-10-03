@@ -21,12 +21,12 @@
 //==============================================================================
 
 interface i2c_monitor_bfm (
-    i2c_if i2c;
+    i2c_if i2c
 );
 
     `include "uvm_macros.svh"
     import uvm_pkg::*;
-    improt i2c_agent_pkg::*;
+    import i2c_agent_pkg::*;
 
     //----------------------------------------------------------------------
     // Members
@@ -62,7 +62,7 @@ interface i2c_monitor_bfm (
                 forever begin
                     mon_byte(data, ack);
 
-                    if (ack == ACK) begin
+                    if (ack == I2C_ACK) begin
                         i2c_frame.data.push_back(data);
                     end
                 end

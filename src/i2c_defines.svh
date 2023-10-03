@@ -51,7 +51,7 @@ typedef enum {
 //------------------------------------------------------------------------------
 // I2C Timing Parameters
 //------------------------------------------------------------------------------
-typedef struct packed {
+typedef struct {
     realtime low_period;
     realtime high_period;
 

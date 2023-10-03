@@ -77,7 +77,7 @@ class i2c_agent_config extends uvm_object;
             I2C_FAST: speed_spec = I2C_FAST_TIMING;
             I2C_FAST_PLUS: speed_spec = I2C_FAST_PLUS_TIMING;
             default:
-                `uvm_fatal("I2C_HIGH_SPEED not currently supported")
+                `uvm_fatal("I2C Agent Config", "I2C_HIGH_SPEED not currently supported")
         endcase
 
         if (this.timing.low_period < speed_spec.low_period) begin

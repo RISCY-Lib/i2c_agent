@@ -58,7 +58,7 @@ class i2c_seq_item extends uvm_sequence_item;
         addr = to_copy.addr;
     endfunction: do_copy
 
-    function void do_compare(uvm_object rhs, uvm_comparer comparer);
+    function bit do_compare(uvm_object rhs, uvm_comparer comparer);
         i2c_seq_item to_compare;
 
         if (!$cast(to_compare, rhs)) begin

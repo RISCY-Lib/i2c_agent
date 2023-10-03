@@ -21,7 +21,7 @@
 //==============================================================================
 
 class i2c_monitor extends uvm_component;
-    `uvm_component(i2c_monitor)
+    `uvm_component_utils(i2c_monitor)
 
     // Virtual interface
     local virtual i2c_monitor_bfm m_bfm;

@@ -47,7 +47,7 @@ class i2c_driver extends uvm_driver #(i2c_seq_item);
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
         `get_config(i2c_agent_config, m_cfg, "i2c_agent_config")
-        m_bfm = m_cfg.drv_bfm
+        m_bfm = m_cfg.drv_bfm;
         m_bfm.m_cfg = m_cfg;
     endfunction
 
@@ -56,7 +56,7 @@ class i2c_driver extends uvm_driver #(i2c_seq_item);
 
         forever begin
             seq_item_port.get_next_item(i2c_frame);
-            m_bfm.drive(spi_frame);
+            m_bfm.drive(i2c_frame);
             seq_item_port.item_done();
         end
     endtask

@@ -21,7 +21,7 @@
 //==============================================================================
 
 interface i2c_driver_bfm (
-    i2c_if i2c;
+    i2c_if i2c
 );
 
     `include "uvm_macros.svh"
@@ -68,33 +68,33 @@ interface i2c_driver_bfm (
         i2c.sda = m_cfg.high;
         i2c.scl = m_cfg.high;
 
-        #(m_cfg.start_setup);
+        #(m_cfg.timing.start_setup);
         i2c.sda = m_cfg.low;
 
-        #(m_cfg.start_hold);
+        #(m_cfg.timing.start_hold);
         i2c.scl = m_cfg.low;
     endtask
 
     task stop_condition();
         i2c.scl = m_cfg.high;
 
-        #(m_cfg.stop_hold);
+        #(m_cfg.timing.stop_setup);
         i2c.sda = m_cfg.high;
     endtask
 
     task drive_bit(logic val);
-        #(m_cfg.low_period - m_cfg.data_setup)
+        #(m_cfg.timing.low_period - m_cfg.timing.data_setup)
         i2c.sda = (val) ? m_cfg.high : m_cfg.low;
 
-        #(m_cfg.data_setup);
+        #(m_cfg.timing.data_setup);
         i2c.scl = m_cfg.high;
 
-        #(m_cfg.high_period);
+        #(m_cfg.timing.high_period);
         i2c.scl = m_cfg.low;
     endtask
 
     task drive_address(logic [9:0] addr, i2c_addr_size_e size);
-        int len = (size == I2C_ADDR_7) ? 7 : 10;
+        int len = (size == I2C_7_BIT_ADDR) ? 7 : 10;
 
         for (int i = len - 1; i >= 0; i--) begin
             drive_bit(addr[i]);
@@ -105,7 +105,7 @@ interface i2c_driver_bfm (
         drive_bit(dir);
     endtask
 
-    task drive_write_data(ref logic [7:0] data[$]);
+    task drive_write_data(logic [7:0] data[$]);
         logic [7:0] dbyte;
 
         while (data.size() > 0) begin
