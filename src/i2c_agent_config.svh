@@ -42,7 +42,7 @@ class i2c_agent_config extends uvm_object;
     i2c_timing_t timing = I2C_STANDARD_TIMING;
 
     // Transmission States
-    logic high = 1'bZ;
+    logic high = 1'b1;
     logic low = 1'b0;
 
     // Is the agent active or passive

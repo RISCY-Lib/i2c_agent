@@ -41,38 +41,38 @@ interface i2c_monitor_bfm (
     //----------------------------------------------------------------------
 
     task mon_i2c();
-        i2c_seq_item i2c_frame;
-        logic [7:0] data;
-        i2c_ack_e ack;
+        // i2c_seq_item i2c_frame;
+        // logic [7:0] data;
+        // i2c_ack_e ack;
 
-        i2c_frame = i2c_seq_item::type_id::create("i2c_frame");
+        // i2c_frame = i2c_seq_item::type_id::create("i2c_frame");
 
-        // Wait for the bus to be in the correct state
-        wait_start_state();
+        // // Wait for the bus to be in the correct state
+        // wait_start_state();
 
-        fork
-            wait_stop();
+        // fork
+        //     wait_stop();
 
-            begin
-                mon_byte(data, ack);
+        //     begin
+        //         mon_byte(data, ack);
 
-                i2c_frame.addr = data[7:1];
-                i2c_frame.dir = data[0];
+        //         i2c_frame.addr = data[7:1];
+        //         i2c_frame.dir = data[0];
 
-                forever begin
-                    mon_byte(data, ack);
+        //         forever begin
+        //             mon_byte(data, ack);
 
-                    if (ack == I2C_ACK) begin
-                        i2c_frame.data.push_back(data);
-                    end
-                end
-            end
-        join_any
+        //             if (ack == I2C_ACK) begin
+        //                 i2c_frame.data.push_back(data);
+        //             end
+        //         end
+        //     end
+        // join_any
 
-        disable fork;
+        // disable fork;
 
-        if (i2c_frame.data.size() >= 1)
-            proxy.notify_transaction(i2c_frame);
+        // if (i2c_frame.data.size() >= 1)
+        //     proxy.notify_transaction(i2c_frame);
     endtask
 
     task wait_start_state();

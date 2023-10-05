@@ -23,6 +23,38 @@
 `ifndef __I2C_SEQ_ITEM_SVH__
 `define __I2C_SEQ_ITEM_SVH__
 
+class i2c_data_package extends uvm_object;
+    `uvm_object_utils(i2c_data_package)
+
+    //----------------------------------------------------------------------
+    // Data Members
+    //----------------------------------------------------------------------
+    i2c_dir_e dir;
+
+    logic [7:0] data[$];
+
+    //----------------------------------------------------------------------
+    // Methods
+    //----------------------------------------------------------------------
+
+    // Standard UVM Methods:
+    function new(string name = "i2c_seq_item");
+        super.new(name);
+    endfunction: new
+
+    function void debug();
+        int idx;
+
+        `uvm_info("I2C_DATA_PACKAGE", $sformatf("Dir: %01d", dir), UVM_LOW)
+
+        foreach (data[idx]) begin
+            `uvm_info("I2C_DATA_PACKAGE", $sformatf("Data[%0d]=0x%02X", data[idx]), UVM_LOW)
+        end
+    endfunction
+
+endclass
+
+
 class i2c_seq_item extends uvm_sequence_item;
     `uvm_object_utils(i2c_seq_item)
 
@@ -30,13 +62,13 @@ class i2c_seq_item extends uvm_sequence_item;
     // Data Members
     //----------------------------------------------------------------------
 
-    i2c_dir_e dir;
     i2c_addr_size_e addr_bits;
 
     rand logic [9:0] addr;
 
-    logic [7:0] data[$];
-    int data_bytes;
+    i2c_data_package data_pkgs[$];
+
+    i2c_ack_e final_ack_on_read = I2C_ACK;
 
     //----------------------------------------------------------------------
     // Methods

@@ -49,6 +49,7 @@ class i2c_monitor extends uvm_component;
         `get_config(i2c_agent_config, m_cfg, "i2c_agent_config")
         m_bfm = m_cfg.mon_bfm;
         m_bfm.proxy = this;
+        m_bfm.m_cfg = m_cfg;
         ap = new("ap", this);
     endfunction
 
@@ -59,6 +60,7 @@ class i2c_monitor extends uvm_component;
     endtask
 
     function void notify_transaction(i2c_seq_item item);
+        `uvm_info("I2C Monitor", "Notify transaction", UVM_LOW)
         ap.write(item);
     endfunction
 

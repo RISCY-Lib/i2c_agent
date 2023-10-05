@@ -34,6 +34,17 @@ interface i2c_driver_bfm (
     // Config
     i2c_agent_config m_cfg;
 
+    typedef enum {
+        IDLE,
+        ADDRESS,
+        DIR,
+        ACK,
+        WRITE_DATA,
+        READ_DATA
+    } i2c_drv_state_e;
+
+    i2c_drv_state_e drv_state;
+
     //----------------------------------------------------------------------
     // i2c Driving interface
     //----------------------------------------------------------------------
@@ -42,26 +53,47 @@ interface i2c_driver_bfm (
     task i2c_init();
         i2c.scl = m_cfg.high;
         i2c.sda = m_cfg.high;
+
+        drv_state = IDLE;
     endtask
 
     // Driver a i2c sequence item
     task drive(i2c_seq_item i2c_item);
-        start_condition();
+        i2c_data_package data_pkg = null;
 
-        drive_address(i2c_item.addr, i2c_item.addr_bits);
+        while (i2c_item.data_pkgs.size() > 0) begin
+            if (data_pkg == null)
+                start_condition();
+            else
+                restart_condition();
 
-        drive_dir(i2c_item.dir);
+            data_pkg = i2c_item.data_pkgs.pop_front();
 
-        drive_ack();
+            drv_state = ADDRESS;
 
-        if (i2c_item.dir == I2C_WRITE) begin
-            drive_write_data(i2c_item.data);
-        end
-        else begin
-            drive_read_data(i2c_item.data_bytes);
+            drive_address(i2c_item.addr, i2c_item.addr_bits);
+
+            drv_state = DIR;
+
+            drive_dir(data_pkg.dir);
+
+            drv_state = ACK;
+
+            drive_ack();
+
+            if (data_pkg.dir == I2C_WRITE) begin
+                drv_state = WRITE_DATA;
+                drive_write_data(data_pkg.data);
+            end
+            else begin
+                drv_state = READ_DATA;
+                drive_read_data(data_pkg.data, i2c_item.final_ack_on_read);
+            end
         end
 
         stop_condition();
+
+        drv_state = IDLE;
     endtask
 
     task start_condition();
@@ -75,7 +107,22 @@ interface i2c_driver_bfm (
         i2c.scl = m_cfg.low;
     endtask
 
+    task restart_condition();
+        if (i2c.sda !== m_cfg.high)
+            i2c.sda = m_cfg.high;
+
+        #(m_cfg.timing.start_setup);
+        i2c.sda = m_cfg.low;
+
+        #(m_cfg.timing.start_hold);
+        i2c.scl = m_cfg.low;
+    endtask
+
     task stop_condition();
+        if (i2c.sda !== m_cfg.low)
+            i2c.sda = m_cfg.low;
+
+        #(m_cfg.timing.low_period);
         i2c.scl = m_cfg.high;
 
         #(m_cfg.timing.stop_setup);
@@ -111,27 +158,53 @@ interface i2c_driver_bfm (
         while (data.size() > 0) begin
             dbyte = data.pop_front();
 
+            drv_state = WRITE_DATA;
+
             for (int idx = 7; idx >= 0; idx--) begin
                 drive_bit(dbyte[idx]);
             end
+
+            drv_state = ACK;
 
             drive_ack();
         end
     endtask
 
-    task drive_read_data(int data_bytes);
-        for (int i = 0; i < data_bytes; i++) begin
-            for (int j = 0; j < 8; j++) begin
+    task drive_read_data(logic [7:0] data[$], i2c_ack_e final_ack);
+        logic [7:0] dbyte;
+
+        while (data.size() > 0) begin
+            dbyte = data.pop_front();
+
+            drv_state = WRITE_DATA;
+
+            for (int idx = 7; idx >= 0; idx--) begin
                 drive_bit(1'bZ);
             end
 
+            drv_state = ACK;
+
             // Ack
-            drive_bit(1'b1);
+            if (data.size() == 0)
+                drive_bit(final_ack);
+            else
+                drive_bit(I2C_ACK);
         end
     endtask
 
     task drive_ack();
-        drive_bit(1'bZ);
+        drive_highz();
+    endtask
+
+    task drive_highz();
+        #(m_cfg.timing.low_period - m_cfg.timing.data_setup)
+        i2c.sda = 1'bZ;
+
+        #(m_cfg.timing.data_setup);
+        i2c.scl = m_cfg.high;
+
+        #(m_cfg.timing.high_period);
+        i2c.scl = m_cfg.low;
     endtask
 
 endinterface
