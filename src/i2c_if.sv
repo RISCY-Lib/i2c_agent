@@ -21,6 +21,8 @@
 //==============================================================================
 
 interface i2c_if;
-    logic sda;
-    logic scl;
+    tri sda;
+    tri scl;
+    tri a0;
+    tri a1;
 endinterface
