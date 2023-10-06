@@ -62,10 +62,6 @@ class i2c_seq_item extends uvm_sequence_item;
     // Data Members
     //----------------------------------------------------------------------
 
-    i2c_addr_size_e addr_bits;
-
-    rand logic [9:0] addr;
-
     i2c_data_package data_pkgs[$];
 
     i2c_ack_e final_ack_on_read = I2C_ACK;
@@ -86,8 +82,6 @@ class i2c_seq_item extends uvm_sequence_item;
             `uvm_fatal("do_copy", "cast failed, check type compatibility")
 
         super.do_copy(rhs);
-
-        addr = to_copy.addr;
     endfunction: do_copy
 
     function bit do_compare(uvm_object rhs, uvm_comparer comparer);
@@ -98,13 +92,13 @@ class i2c_seq_item extends uvm_sequence_item;
             return 0;
         end
 
-        return super.do_compare(rhs, comparer) && (addr == to_compare.addr);
+        return super.do_compare(rhs, comparer);
     endfunction
 
     function string convert2string();
         string s;
 
-        $sformat(s, "i2c_seq_item:\n\taddr = %0d", addr);
+        // TODO
 
         return s;
     endfunction
@@ -116,7 +110,6 @@ class i2c_seq_item extends uvm_sequence_item;
     function void do_record(uvm_recorder recorder);
         super.do_record(recorder);
 
-        recorder.record_field_int("addr", addr, $bits(addr), UVM_DEC);
     endfunction
 
 endclass

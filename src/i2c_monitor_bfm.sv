@@ -36,55 +36,85 @@ interface i2c_monitor_bfm (
 
     i2c_monitor proxy;
 
+    i2c_seq_item i2c_frame;
+    i2c_data_package i2c_data_pkg;
+    logic [7:0] data;
+    i2c_ack_e ack;
+
     //----------------------------------------------------------------------
     // i2c Monitor interface
     //----------------------------------------------------------------------
 
     task mon_i2c();
-        // i2c_seq_item i2c_frame;
-        // logic [7:0] data;
-        // i2c_ack_e ack;
+        i2c_frame = i2c_seq_item::type_id::create("i2c_frame");
 
-        // i2c_frame = i2c_seq_item::type_id::create("i2c_frame");
+        // Wait for the bus to be in the correct state
+        wait_start_state();
 
-        // // Wait for the bus to be in the correct state
-        // wait_start_state();
+        fork
+            wait_stop();
 
-        // fork
-        //     wait_stop();
+            forever begin
+                _mon_data_pkg();
+            end
+        join_any
 
-        //     begin
-        //         mon_byte(data, ack);
+        disable fork;
 
-        //         i2c_frame.addr = data[7:1];
-        //         i2c_frame.dir = data[0];
+        if (i2c_frame.data_pkgs.size() >= 1)
+            proxy.notify_transaction(i2c_frame);
+    endtask
 
-        //         forever begin
-        //             mon_byte(data, ack);
+    task _mon_data_pkg();
+        fork
+            begin
+                fork
+                    wait_start_state();
 
-        //             if (ack == I2C_ACK) begin
-        //                 i2c_frame.data.push_back(data);
-        //             end
-        //         end
-        //     end
-        // join_any
+                    begin
 
-        // disable fork;
+                        i2c_data_pkg = i2c_data_package::type_id::create("i2c_data_pkg");
+                        i2c_frame.data_pkgs.push_back(i2c_data_pkg);
 
-        // if (i2c_frame.data.size() >= 1)
-        //     proxy.notify_transaction(i2c_frame);
-        #1ns;
+                        mon_byte(data, ack);
+
+                        // TODO: Check for correct address
+                        i2c_data_pkg.dir = data[0];
+
+                        forever begin
+                            mon_byte(data, ack);
+
+                            i2c_data_pkg.data.push_back(data);
+                        end
+                    end
+                join_any
+
+                disable fork;
+            end
+        join
+
     endtask
 
     task wait_start_state();
-        // Wait for the bus to be in the correct state
-        while (i2c.scl !== m_cfg.high || i2c.sda !== m_cfg.high) begin
-            @(i2c.scl or i2c.sda);
+        forever begin
+            // Wait for the bus to be in the correct state
+            while (i2c.scl !== m_cfg.high || i2c.sda !== m_cfg.high) begin
+                @(i2c.scl or i2c.sda);
+            end
+
+            @(i2c.sda);
+
+            if (i2c.scl === m_cfg.high) begin
+                @(i2c.scl);
+                return;
+            end
+
         end
+
     endtask
 
     task wait_stop();
-        while (1'b1) begin
+        forever begin
             @(i2c.sda);
             if (i2c.sda == m_cfg.high && i2c.scl == m_cfg.high) begin
                 break;

@@ -49,6 +49,10 @@ class i2c_agent_config extends uvm_object;
     uvm_active_passive_enum active = UVM_ACTIVE;
     bit has_functional_coverage = 0;
 
+    // Part address
+    bit [6:0] address;
+    i2c_addr_size_e addr_bits;
+
     //------------------------------------------
     // Methods
     //------------------------------------------
