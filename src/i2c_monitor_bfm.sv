@@ -73,6 +73,7 @@ interface i2c_monitor_bfm (
 
         // if (i2c_frame.data.size() >= 1)
         //     proxy.notify_transaction(i2c_frame);
+        #1ns;
     endtask
 
     task wait_start_state();
