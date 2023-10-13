@@ -60,7 +60,7 @@ class i2c_monitor extends uvm_component;
     endtask
 
     function void notify_transaction(i2c_seq_item item);
-        `uvm_info("I2C Monitor", "Notify transaction", UVM_LOW)
+        `uvm_info("I2C Monitor", "Notify transaction", UVM_HIGH)
         ap.write(item);
     endfunction
 

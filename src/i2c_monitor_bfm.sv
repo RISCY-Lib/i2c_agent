@@ -98,13 +98,13 @@ interface i2c_monitor_bfm (
     task wait_start_state();
         forever begin
             // Wait for the bus to be in the correct state
-            while (i2c.scl !== m_cfg.high || i2c.sda !== m_cfg.high) begin
+            while (i2c.scl !== 1'b1 || i2c.sda !== 1'b1) begin
                 @(i2c.scl or i2c.sda);
             end
 
             @(i2c.sda);
 
-            if (i2c.scl === m_cfg.high) begin
+            if (i2c.scl === 1'b1) begin
                 @(i2c.scl);
                 return;
             end
@@ -116,7 +116,7 @@ interface i2c_monitor_bfm (
     task wait_stop();
         forever begin
             @(i2c.sda);
-            if (i2c.sda == m_cfg.high && i2c.scl == m_cfg.high) begin
+            if (i2c.sda == 1'b1 && i2c.scl == 1'b1) begin
                 break;
             end
         end

@@ -52,10 +52,10 @@ interface i2c_driver_bfm (
     logic a0;
     logic a1;
 
-    assign i2c.scl = (scl !== 1'bZ) ? scl : 1'bZ;
-    assign i2c.sda = (scl !== 1'bZ) ? sda : 1'bZ;
-    assign i2c.a0 = (a0 !== 1'bZ) ? a0 : 1'bZ;
-    assign i2c.a1 = (a1 !== 1'bZ) ? a1 : 1'bZ;
+    assign (pull1, strong0) i2c.scl = (scl !== 1'bZ) ? scl : 1'bZ;
+    assign (pull1, strong0) i2c.sda = (scl !== 1'bZ) ? sda : 1'bZ;
+    assign (pull1, strong0) i2c.a0 = (a0 !== 1'bZ) ? a0 : 1'bZ;
+    assign (pull1, strong0) i2c.a1 = (a1 !== 1'bZ) ? a1 : 1'bZ;
 
     //----------------------------------------------------------------------
     // i2c Driving interface
@@ -63,8 +63,8 @@ interface i2c_driver_bfm (
 
     // Initialize the BFM
     task i2c_init();
-        scl = m_cfg.high;
-        sda = m_cfg.high;
+        scl = 1'b1;
+        sda = 1'b1;
         a0 = 1'b0;
         a1 = 1'b0;
         drv_state = IDLE;
@@ -124,57 +124,57 @@ interface i2c_driver_bfm (
     endtask
 
     task start_condition();
-        sda = m_cfg.high;
-        scl = m_cfg.high;
+        sda = 1'b1;
+        scl = 1'b1;
 
         #(m_cfg.timing.bus_free);
-        sda = m_cfg.low;
+        sda = 1'b0;
 
         #(m_cfg.timing.start_hold);
-        scl = m_cfg.low;
+        scl = 1'b0;
     endtask
 
     task restart_condition();
-        if (sda !== m_cfg.high)
-            sda = m_cfg.high;
+        if (sda !== 1'b1)
+            sda = 1'b1;
 
-        if (scl !== m_cfg.high) begin
+        if (scl !== 1'b1) begin
             #(m_cfg.timing.data_valid);
-            scl = m_cfg.high;
+            scl = 1'b1;
         end
 
         #(m_cfg.timing.start_setup);
-        sda = m_cfg.low;
+        sda = 1'b0;
 
         #(m_cfg.timing.start_hold);
-        scl = m_cfg.low;
+        scl = 1'b0;
     endtask
 
     task stop_condition();
-        if (sda !== m_cfg.low)
-            sda = m_cfg.low;
+        if (sda !== 1'b0)
+            sda = 1'b0;
 
         #(m_cfg.timing.low_period);
-        scl = m_cfg.high;
+        scl = 1'b1;
 
         #(m_cfg.timing.stop_setup);
-        sda = m_cfg.high;
+        sda = 1'b1;
     endtask
 
     task drive_bit(logic val);
         #(m_cfg.timing.low_period - m_cfg.timing.data_setup)
         if (val === 1'b1)
-            sda = m_cfg.high;
+            sda = 1'b1;
         else if (val === 1'b0)
-            sda = m_cfg.low;
+            sda = 1'b0;
         else
             sda = val;
 
         #(m_cfg.timing.data_setup);
-        scl = m_cfg.high;
+        scl = 1'b1;
 
         #(m_cfg.timing.high_period);
-        scl = m_cfg.low;
+        scl = 1'b0;
     endtask
 
     task drive_address(logic [9:0] addr, i2c_addr_size_e size);
@@ -203,7 +203,7 @@ interface i2c_driver_bfm (
 
             drv_state = ACK;
 
-            drive_ack(1'bZ);
+            drive_ack(1'b1);
         end
     endtask
 
@@ -216,7 +216,7 @@ interface i2c_driver_bfm (
             drv_state = WRITE_DATA;
 
             for (int idx = 7; idx >= 0; idx--) begin
-                drive_bit(1'bZ);
+                drive_bit(1'b1);
             end
 
             drv_state = ACK;
@@ -229,15 +229,15 @@ interface i2c_driver_bfm (
         end
     endtask
 
-    task drive_ack(logic val=1'bZ);
+    task drive_ack(logic val=1'b1);
         #(m_cfg.timing.data_ack);
         sda = val;
 
         #(m_cfg.timing.low_period - m_cfg.timing.data_ack);
-        scl = m_cfg.high;
+        scl = 1'b1;
 
         #(m_cfg.timing.high_period);
-        scl = m_cfg.low;
+        scl = 1'b0;
     endtask
 
 endinterface
