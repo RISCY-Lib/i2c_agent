@@ -20,6 +20,10 @@
 // Description: The Driver BFM for the UVM I2C Agent
 //==============================================================================
 
+`ifndef I2C_DRIVER_PULLUP_STRENGTH
+`define I2C_DRIVER_PULLUP_STRENGTH pull1
+`endif
+
 interface i2c_driver_bfm (
     i2c_if i2c
 );
@@ -52,10 +56,10 @@ interface i2c_driver_bfm (
     logic a0;
     logic a1;
 
-    assign (pull1, strong0) i2c.scl = (scl !== 1'bZ) ? scl : 1'bZ;
-    assign (pull1, strong0) i2c.sda = (scl !== 1'bZ) ? sda : 1'bZ;
-    assign (pull1, strong0) i2c.a0 = (a0 !== 1'bZ) ? a0 : 1'bZ;
-    assign (pull1, strong0) i2c.a1 = (a1 !== 1'bZ) ? a1 : 1'bZ;
+    assign (`I2C_DRIVER_PULLUP_STRENGTH, strong0) i2c.scl = (scl !== 1'bZ) ? scl : 1'bZ;
+    assign (`I2C_DRIVER_PULLUP_STRENGTH, strong0) i2c.sda = (scl !== 1'bZ) ? sda : 1'bZ;
+    assign (`I2C_DRIVER_PULLUP_STRENGTH, strong0) i2c.a0 = (a0 !== 1'bZ) ? a0 : 1'bZ;
+    assign (`I2C_DRIVER_PULLUP_STRENGTH, strong0) i2c.a1 = (a1 !== 1'bZ) ? a1 : 1'bZ;
 
     //----------------------------------------------------------------------
     // i2c Driving interface
